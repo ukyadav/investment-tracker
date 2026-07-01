@@ -101,6 +101,7 @@
         .button-group {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -131,6 +132,16 @@
 
         .btn-secondary:hover {
             background: #f9f9f7;
+        }
+
+        .btn-export {
+            background: #28a745;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .btn-export:hover {
+            background: #1e7e34;
         }
 
         .btn-edit {
@@ -205,6 +216,34 @@
             padding: 2rem;
         }
 
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .export-section {
+            background: #e7f3ff;
+            border: 1px solid #2a78d6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .export-section h3 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -235,7 +274,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Investment Tracker</h1>
+        <h1>📈 Investment Tracker</h1>
+
+        <div class="success-message" id="successMessage">
+            ✓ Investment saved successfully!
+        </div>
+
+        <!-- Export Section -->
+        <div class="export-section">
+            <h3>💾 Backup Your Data</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 0.5rem;">Export your investments as CSV file</p>
+            <button class="btn-export" onclick="exportToCSV()">📥 Export to CSV</button>
+        </div>
 
         <!-- Summary Cards -->
         <div class="summary">
@@ -261,7 +311,7 @@
         <div class="form-section">
             <h2 id="formTitle">Add new investment</h2>
             <div class="form-grid">
-                <input type="text" id="name" placeholder="Investment name">
+                <input type="text" id="name" placeholder="Investment name (e.g., Apple Stock)">
                 <input type="number" id="amount" placeholder="Amount invested" step="0.01">
                 <input type="number" id="value" placeholder="Current value" step="0.01">
             </div>
@@ -300,6 +350,13 @@
             localStorage.setItem('investments', JSON.stringify(investments));
         }
 
+        // Show success message
+        function showSuccess() {
+            const msg = document.getElementById('successMessage');
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
         // Add or update investment
         function addOrUpdate() {
             const name = document.getElementById('name').value.trim();
@@ -334,6 +391,7 @@
             saveInvestments();
             clearForm();
             render();
+            showSuccess();
         }
 
         // Edit investment
@@ -381,6 +439,36 @@
             return '$' + Math.round(num).toLocaleString();
         }
 
+        // Export to CSV
+        function exportToCSV() {
+            if (investments.length === 0) {
+                alert('No investments to export');
+                return;
+            }
+
+            let csv = 'Name,Amount Invested,Current Value,Gain/Loss,Return %,Date Added\n';
+
+            investments.forEach(inv => {
+                const gain = inv.currentValue - inv.amountInvested;
+                const gainPercent = (gain / inv.amountInvested) * 100;
+                const date = new Date(inv.timestamp).toLocaleDateString();
+                csv += `"${inv.name}",${inv.amountInvested},${inv.currentValue},${gain.toFixed(2)},${gainPercent.toFixed(2)},${date}\n`;
+            });
+
+            // Download the file
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'investments.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            alert('✓ File downloaded: investments.csv');
+        }
+
         // Render everything
         function render() {
             // Update summary
@@ -406,7 +494,7 @@
             // Render investments
             const list = document.getElementById('investmentsList');
             if (investments.length === 0) {
-                list.innerHTML = '<div class="empty-state">No investments yet. Add one to get started.</div>';
+                list.innerHTML = '<div class="empty-state">No investments yet. Add one to get started! 👇</div>';
                 return;
             }
 
@@ -414,6 +502,7 @@
                 const gain = inv.currentValue - inv.amountInvested;
                 const gainPercent = (gain / inv.amountInvested) * 100;
                 const gainClass = gain >= 0 ? 'positive' : 'negative';
+                const date = new Date(inv.timestamp).toLocaleDateString();
 
                 return `
                     <div class="investment-item">
@@ -425,6 +514,7 @@
                                 <span class="${gainClass}" style="font-weight: 500;">
                                     ${gain >= 0 ? '+' : ''}${formatCurrency(gain)} (${gainPercent.toFixed(1)}%)
                                 </span>
+                                <span style="color: #aaa;">Added: ${date}</span>
                             </div>
                         </div>
                         <div class="investment-actions">
