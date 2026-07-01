@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fafaf8;
+            color: #0b0b0b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #e0e0dc;
+        }
+
+        .card-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 22px;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #0ca30c;
+        }
+
+        .negative {
+            color: #d03b3b;
+        }
+
+        .form-section {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e0e0dc;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        input {
+            padding: 8px 12px;
+            border: 1px solid #e0e0dc;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2a78d6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #2a78d6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1f5aa8;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 1px solid #e0e0dc;
+        }
+
+        .btn-secondary:hover {
+            background: #f9f9f7;
+        }
+
+        .btn-edit {
+            padding: 6px 12px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #e0e0dc;
+            font-size: 13px;
+        }
+
+        .btn-edit:hover {
+            background: #f9f9f7;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: transparent;
+            color: #d03b3b;
+            border: 1px solid #e0e0dc;
+            font-size: 13px;
+        }
+
+        .btn-delete:hover {
+            background: #fef1f1;
+        }
+
+        .investments-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .investment-item {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e0e0dc;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .investment-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .investment-name {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .investment-details {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #666;
+            flex-wrap: wrap;
+        }
+
+        .investment-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            color: #888;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .investment-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .investment-actions {
+                width: 100%;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Investment Tracker</h1>
+
+        <!-- Summary Cards -->
+        <div class="summary">
+            <div class="card">
+                <div class="card-label">Total invested</div>
+                <div class="card-value" id="totalInvested">$0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Current value</div>
+                <div class="card-value" id="totalValue">$0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Gain/loss</div>
+                <div class="card-value" id="totalGain">$0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Return</div>
+                <div class="card-value" id="returnPercent">0%</div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-section">
+            <h2 id="formTitle">Add new investment</h2>
+            <div class="form-grid">
+                <input type="text" id="name" placeholder="Investment name">
+                <input type="number" id="amount" placeholder="Amount invested" step="0.01">
+                <input type="number" id="value" placeholder="Current value" step="0.01">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="addOrUpdate()">Add</button>
+                <button class="btn-secondary" id="cancelBtn" onclick="cancel()" style="display: none;">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Investments List -->
+        <div>
+            <h2 id="listTitle">Your investments (0)</h2>
+            <div class="investments-list" id="investmentsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let investments = [];
+        let editingId = null;
+
+        // Load from localStorage
+        function loadInvestments() {
+            try {
+                const saved = localStorage.getItem('investments');
+                if (saved) {
+                    investments = JSON.parse(saved);
+                }
+            } catch (error) {
+                console.error('Error loading investments:', error);
+            }
+            render();
+        }
+
+        // Save to localStorage
+        function saveInvestments() {
+            localStorage.setItem('investments', JSON.stringify(investments));
+        }
+
+        // Add or update investment
+        function addOrUpdate() {
+            const name = document.getElementById('name').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const value = parseFloat(document.getElementById('value').value);
+
+            if (!name || isNaN(amount) || isNaN(value)) {
+                alert('Please fill in all fields with valid numbers');
+                return;
+            }
+
+            if (editingId) {
+                const index = investments.findIndex(inv => inv.id === editingId);
+                investments[index] = {
+                    id: editingId,
+                    name,
+                    amountInvested: amount,
+                    currentValue: value,
+                    timestamp: investments[index].timestamp
+                };
+                editingId = null;
+            } else {
+                investments.push({
+                    id: Date.now(),
+                    name,
+                    amountInvested: amount,
+                    currentValue: value,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            saveInvestments();
+            clearForm();
+            render();
+        }
+
+        // Edit investment
+        function edit(id) {
+            const inv = investments.find(i => i.id === id);
+            if (inv) {
+                document.getElementById('name').value = inv.name;
+                document.getElementById('amount').value = inv.amountInvested;
+                document.getElementById('value').value = inv.currentValue;
+                document.getElementById('formTitle').textContent = 'Edit investment';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.querySelector('.btn-primary').textContent = 'Update';
+                editingId = id;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Delete investment
+        function deleteInvestment(id) {
+            if (confirm('Delete this investment?')) {
+                investments = investments.filter(inv => inv.id !== id);
+                saveInvestments();
+                render();
+            }
+        }
+
+        // Cancel editing
+        function cancel() {
+            clearForm();
+            editingId = null;
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('value').value = '';
+            document.getElementById('formTitle').textContent = 'Add new investment';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.querySelector('.btn-primary').textContent = 'Add';
+        }
+
+        // Format currency
+        function formatCurrency(num) {
+            return '$' + Math.round(num).toLocaleString();
+        }
+
+        // Render everything
+        function render() {
+            // Update summary
+            const totalInvested = investments.reduce((sum, inv) => sum + inv.amountInvested, 0);
+            const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+            const totalGain = totalValue - totalInvested;
+            const returnPercent = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
+
+            document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+            
+            const gainEl = document.getElementById('totalGain');
+            gainEl.textContent = formatCurrency(totalGain);
+            gainEl.className = 'card-value ' + (totalGain >= 0 ? 'positive' : 'negative');
+
+            const returnEl = document.getElementById('returnPercent');
+            returnEl.textContent = returnPercent.toFixed(1) + '%';
+            returnEl.className = 'card-value ' + (returnPercent >= 0 ? 'positive' : 'negative');
+
+            // Update list title
+            document.getElementById('listTitle').textContent = `Your investments (${investments.length})`;
+
+            // Render investments
+            const list = document.getElementById('investmentsList');
+            if (investments.length === 0) {
+                list.innerHTML = '<div class="empty-state">No investments yet. Add one to get started.</div>';
+                return;
+            }
+
+            list.innerHTML = investments.map(inv => {
+                const gain = inv.currentValue - inv.amountInvested;
+                const gainPercent = (gain / inv.amountInvested) * 100;
+                const gainClass = gain >= 0 ? 'positive' : 'negative';
+
+                return `
+                    <div class="investment-item">
+                        <div class="investment-info">
+                            <div class="investment-name">${inv.name}</div>
+                            <div class="investment-details">
+                                <span>Invested: ${formatCurrency(inv.amountInvested)}</span>
+                                <span>Current: ${formatCurrency(inv.currentValue)}</span>
+                                <span class="${gainClass}" style="font-weight: 500;">
+                                    ${gain >= 0 ? '+' : ''}${formatCurrency(gain)} (${gainPercent.toFixed(1)}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="investment-actions">
+                            <button class="btn-edit" onclick="edit(${inv.id})">Edit</button>
+                            <button class="btn-delete" onclick="deleteInvestment(${inv.id})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load on page load
+        loadInvestments();
+    </script>
+</body>
+</html>
